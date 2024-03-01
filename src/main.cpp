@@ -4,6 +4,13 @@
 #define RX_pin = 20
 #define TX_pin = 21
 
+/* SBUS object, reading SBUS */
+bfs::SbusRx sbus_rx(&Serial2);
+/* SBUS object, writing SBUS */
+bfs::SbusTx sbus_tx(&Serial2);
+/* SBUS data */
+bfs::SbusData data;
+
 void setup() {
     /* Serial to display data */
     Serial.begin(115200);
