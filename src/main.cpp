@@ -4,16 +4,16 @@
 #define RX_pin 20
 #define TX_pin 21
 
-#define Throttle data.ch[2]
-#define Yaw data.ch[3]
-#define Pitch data.ch[1]
-#define Roll data.ch[0]
+#define THROTTLE data.ch[2]
+#define YAW data.ch[3]
+#define PITCH data.ch[1]
+#define ROLL data.ch[0]
 
-#define MotorPin 0
-#define RudderPin
-#define ElevatorPin
-#define AileronLPin 1
-#define AileronRPin 2
+#define MOTOR_PIN 0
+#define RUDDER_PIN
+#define ELEVATOR_PIN
+#define AILERON_L_PIN 1
+#define AILERON_R_PIN 2
 
 #include <HardwareSerial.h>
 
@@ -37,10 +37,13 @@ void setup() {
     /* Begin the SBUS communication */
     sbus_rx.Begin();
 
-    ledcAttachPin(AileronLPin, 1);
-    ledcAttachPin(AileronRPin, 2);
+    ledcAttachPin(AILERON_L_PIN, 1);
+    ledcAttachPin(AILERON_R_PIN, 2);
     ledcSetup(1, 50, 14);
     ledcSetup(2, 50, 14);
+
+    ledcAttachPin(MOTOR_PIN, 0);
+    ledcSetup(0, 20000, 12);
 }
 
 /* Display the received data */
@@ -54,17 +57,17 @@ void setup() {
         Serial.println(data.failsafe);*/
 
 /*
-        Serial.print("Throttle: ");
-        Serial.print(Throttle);
+        Serial.print("THROTTLE: ");
+        Serial.print(THROTTLE);
         Serial.print("\t");
-        Serial.print("Yaw: ");
-        Serial.print(Yaw);
+        Serial.print("YAW: ");
+        Serial.print(YAW);
         Serial.print("\t");
-        Serial.print("Roll: ");
-        Serial.print(Roll);
+        Serial.print("ROLL: ");
+        Serial.print(ROLL);
         Serial.print("\t");
-        Serial.print("Pitch: ");
-        Serial.print(Pitch);
+        Serial.print("PITCH: ");
+        Serial.print(PITCH);
         Serial.print("\n");
 */
 
@@ -72,10 +75,18 @@ void setup() {
 // max value = 1811
 // mid value = 992
 
-u16_t getDutyFromRcIn(double rcVal) {
+u16_t getServoDutyFromRcIn(double rcVal) {
 
     double temp1 = (rcVal - 172.0) / (1811.0 - 172.0);
     u16_t temp2 = (temp1 + 1) * (16383 / 20);
+
+    return(temp2);
+}
+
+u16_t getMotorDutyFromRcIn(double rcVal) {
+
+    double temp1 = (rcVal - 172.0) / (1811.0 - 172.0);
+    u16_t temp2 = (temp1) * 4095;
 
     return(temp2);
 }
@@ -85,10 +96,13 @@ void loop(){
         /* Grab the received data */
         data = sbus_rx.data();
         
-        ledcWrite(1, getDutyFromRcIn(1983.0 - Roll));
-        ledcWrite(2, getDutyFromRcIn(Roll));
+        ledcWrite(1, getServoDutyFromRcIn(1983.0 - ROLL));
+        ledcWrite(2, getServoDutyFromRcIn(ROLL));
 
-        Serial.print(getDutyFromRcIn(1983.0 - Roll));
+        ledcWrite(0, getMotorDutyFromRcIn(THROTTLE));
+
+        Serial.print(getMotorDutyFromRcIn(THROTTLE));
         Serial.print("\n");
+
     }
 }
